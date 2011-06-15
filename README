@@ -1,0 +1,41 @@
+INTRODUCTION
+------------
+
+PyDiveLog is an open-source SCUBA dive log program written in Python and PySide 
+(Qt4).  It aims to replicate the features of advanced dive logging programs
+while maintaining an easy-to-use interface adequate for both casual divers and
+dive pros.  Logbooks are stored with an open SQLite schema which is simple to
+backup and access with third-party programs.  By using standard software such as
+Python, Qt4, and SQLite, PyDiveLog can be run on Windows, OS X, or Linux.
+
+PyDiveLog also supports native transfers from popular dive computer models. 
+Using pure Python plugins, drivers and parsers for new dive computers can be
+added easily.  Currently PyDiveLog supports the Uwatec Smart line of dive
+computers using IrDA, with more to be added in the future.  To connect to IrDA
+(infrared) dive computers, the python-irda module must be installed on your
+system (https://github.com/asymworks/python-irda). 
+
+COPYRIGHT/COPYING
+-----------------
+
+PyDiveLog is copyright (c) 2011 Asymworks, LLC.  All rights reserved.  The
+software is released under the GPLv2 and may be copied and redistributed in
+accordance with the license.
+
+The author may be contacted at jkrauss at asymworks dot com.
+
+DEVELOPMENT
+-----------
+
+PyDiveLog is still under heavy development as time and ambition allow.  There
+is a complete dive computer transfer program included (qdcxfer.py) which will
+download dives from supported dive computers and store them in the Logbook 
+format.
+
+CHANGELOG
+---------
+
+0.1.0:
+* Initial Release
+* Aladin Tec 2G support added (smart)
+* Dive Computer Transfer app added (qdcxfer)
