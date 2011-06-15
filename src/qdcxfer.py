@@ -31,7 +31,7 @@ from PySide.QtGui import QApplication, QComboBox, QFileDialog, QGridLayout, \
     QPushButton, QTextEdit, QVBoxLayout, QWidget
 from divelog.db import Logbook, models
 from divelog.dc import list_drivers, list_parsers
-from divelog.gui.wizards.add_dc import AddDiveComputerWizard
+from divelog.gui.wizards import AddDiveComputerWizard
 
 # QSettings Information
 __ORG_NAME = 'Asymworks'
