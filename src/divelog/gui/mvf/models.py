@@ -21,8 +21,10 @@ log = logging.getLogger(__name__)
 
 import datetime
 from functools import partial
-from PySide.QtCore import Qt, QAbstractTableModel, QModelIndex
+from PySide.QtCore import Qt, QAbstractListModel, QAbstractTableModel, \
+    QModelIndex
 from PySide.QtGui import QSortFilterProxyModel
+from divelog.db import countries, types
 
 def _defset(o, v, a):
     setattr(o, a, v)
@@ -189,3 +191,33 @@ class SATableModel(QAbstractTableModel):
     def columns(self):
         'Return the list of Columns'
         return self._cols
+    
+class CountryModel(QAbstractListModel):
+    '''
+    Country Column Model
+    
+    Represents a Country value column as a list model, which can be used with
+    a combo box for country selection.
+    '''
+    def __init__(self):
+        super(CountryModel, self).__init__()
+        self.countries = [types.Country(code) for code, _ in countries.COUNTRIES]
+    
+    def rowCount(self, parent=QModelIndex):
+        'Return the number of Rows in the model'
+        return len(self.countries)
+    
+    def data(self, index, role):
+        'Get Item Data'
+        if not index.isValid() or index.row() < 0 or index.row() >= len(self.countries):
+            return None
+        c = self.countries[index.row()]
+        
+        if role == Qt.DisplayRole:
+            return c.name
+        elif role == Qt.EditRole:
+            return unicode(c)
+        elif role == Qt.DecorationRole:
+            return c.icon
+        
+        return None
