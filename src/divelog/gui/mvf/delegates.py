@@ -16,10 +16,12 @@
 # 
 # =============================================================================
 
-from PySide.QtCore import Qt
-from PySide.QtGui import QApplication, QComboBox
+from PySide.QtCore import Qt, QSize
+from PySide.QtGui import QApplication, QComboBox, QImage
 from PySide.QtGui import QStyle, QStyleOptionViewItem, QStyleOptionViewItemV4, \
     QStyledItemDelegate
+from divelog.gui.controls import RatingEditor
+from divelog.gui.settings import read_setting, quantities, abbr, conversion
 
 class CustomDelegate(QStyledItemDelegate):
     '''
@@ -95,6 +97,9 @@ class CustomDelegate(QStyledItemDelegate):
                 editor.setCurrentText(text)
             else:
                 editor.setCurrentIndex(editor.findData(text, Qt.EditRole))
+        elif isinstance(editor, RatingEditor):
+            r = index.data(Qt.EditRole)
+            editor.setRating(r)
         else:
             super(CustomDelegate, self).setEditorData(editor, index)
             
@@ -102,6 +107,8 @@ class CustomDelegate(QStyledItemDelegate):
         # http://bugreports.qt.nokia.com/browse/QTBUG-428 - combo boxes don't play nice with qdatawidget mapper
         if isinstance(editor, QComboBox):
             model.setData(index, editor.itemData(editor.currentIndex(), Qt.EditRole))
+        elif isinstance(editor, RatingEditor):
+            model.setData(index, editor.rating(), Qt.EditRole)
         else:
             super(CustomDelegate, self).setModelData(editor, model, index)
 
@@ -115,3 +122,127 @@ class NoFocusDelegate(CustomDelegate):
     def paint(self, painter, option, index):
         option.state &= ~(QStyle.State_HasFocus)
         super(NoFocusDelegate, self).paint(painter, option, index)
+        
+class DateTimeDelegate(NoFocusDelegate):
+    '''
+    Date/Time Delegate
+    
+    Delegate which formats a datetime value according to the desired date/time
+    format stored in settings.  Note that this formats Python datetime, _not_
+    Qt DateTime since the overhead of constructing QDateTime and converting is
+    quite high.
+    '''
+    def displayText(self, value, locale):
+        fmt = read_setting('dtformat', '%x %I:%M %p')
+        return value.strftime(fmt)
+    
+class MinutesDelegate(NoFocusDelegate):
+    '''
+    Minutes Delegate
+    
+    Delegate which formats a number of minutes as hh:mm.
+    '''
+    def displayText(self, value, locale):
+        return "%d:%02d" % divmod(value, 60)
+    
+class RatingDelegate(NoFocusDelegate):
+    '''
+    Star Rating Item Delegate
+    
+    Model View Delegate which draws a rating score between zero and five as a
+    line of zero to five star glyphs.  A custom star glyph can be passed to the
+    constructor, otherwise a resource named '/icons/star.png' is used.
+    
+    See also RatingEditor.
+    '''
+    #TODO: Create RatingEditor and link here
+    def __init__(self, parent=None, star=None):
+        super(RatingDelegate, self).__init__(parent)
+        
+        if star is None:
+            self._star = QImage(':/icons/star.png')
+        elif not isinstance(star, QImage):
+            raise TypeError('Star Image must be a descendant of QImage')
+        else:
+            self._star = star
+            
+    def paint(self, p, option, index):
+        p.save()
+        
+        self.drawBackground(p, option, index)
+        rating = index.data()
+        width = self._star.width()
+        
+        y = (option.rect.height() - self._star.height()) / 2 
+        p.translate(option.rect.left(), option.rect.top())
+        
+        for i in range(0, 5):
+            if rating >= (i+1):
+                p.drawImage(i*(width + 1), y, self._star)
+        
+        p.restore()
+    
+    def sizeHint(self, option, index):
+        return QSize((self._star.width()+2) * 5, self._star.height()+2)
+        
+    def setStarImage(self, star):
+        'Set the Star Image'
+        if not isinstance(star, QImage):
+            raise TypeError('Star Image must be a descendant of QImage')
+        self._star = star
+        
+    def starImage(self):
+        return self._star
+    
+class UnitsDelegate(NoFocusDelegate):
+    '''
+    Units Delegate
+    
+    Delegate base class for formatting units.  The constructor expects the 
+    quantity (e.g. 'depth' or 'temperature') and the default unit.
+    '''
+    def __init__(self, quantity, default=None, showAbbr=True, parent=None):
+        super(UnitsDelegate, self).__init__(parent)
+        
+        self._quantity = quantity
+        self._default = default
+        self._showAbbr = showAbbr
+        
+        if not quantity in quantities():
+            raise KeyError('Unknown Unit Quantity %s' % quantity)
+            
+    def displayText(self, value, locale):
+        _units = read_setting('%s_units' % self._quantity)
+        
+        if _units is None:
+            _units = self._default
+        
+        _abbr = abbr(self._quantity, _units)
+        _conv = conversion(self._quantity, _units)
+        
+        if _units is None or _abbr is None or _conv[1] is None:
+            return '%.1f' % value
+        elif self._showAbbr:
+            return '%.1f %s' % (_conv[1](value), _abbr)
+        else:
+            return '%.1f' % _conv[1](value)
+        
+class DepthDelegate(UnitsDelegate):
+    '''
+    Depth Delegate
+    
+    Delegate which formats a depth value according to the desired depth units
+    stored in settings.
+    '''
+    def __init__(self, parent=None):
+        super(DepthDelegate, self).__init__('depth', 'meters', False, parent)
+
+class TemperatureDelegate(UnitsDelegate):
+    '''
+    Temperature Delegate
+    
+    Delegate which formats a temperature value according to the desired depth units
+    stored in settings.
+    '''
+    def __init__(self, parent=None):
+        super(TemperatureDelegate, self).__init__('temperature', 'celsius', False, parent)
