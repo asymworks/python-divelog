@@ -16,8 +16,8 @@
 # 
 # =============================================================================
 
-from PySide.QtCore import Qt, QSize
-from PySide.QtGui import QApplication, QComboBox, QImage
+from PySide.QtCore import Qt, QSize, QDate, QDateTime, QTime
+from PySide.QtGui import QApplication, QComboBox, QDateTimeEdit, QImage
 from PySide.QtGui import QStyle, QStyleOptionViewItem, QStyleOptionViewItemV4, \
     QStyledItemDelegate
 from divelog.gui.controls import RatingEditor
@@ -97,6 +97,12 @@ class CustomDelegate(QStyledItemDelegate):
                 editor.setCurrentText(text)
             else:
                 editor.setCurrentIndex(editor.findData(text, Qt.EditRole))
+        elif isinstance(editor, QDateTimeEdit):
+            v = index.data(Qt.EditRole)
+            d = QDate(v.year, v.month, v.day)
+            t = QTime(v.hour, v.minute, v.second)
+            dt = QDateTime(d, t)
+            editor.setDateTime(dt)
         elif isinstance(editor, RatingEditor):
             r = index.data(Qt.EditRole)
             editor.setRating(r)
@@ -107,6 +113,8 @@ class CustomDelegate(QStyledItemDelegate):
         # http://bugreports.qt.nokia.com/browse/QTBUG-428 - combo boxes don't play nice with qdatawidget mapper
         if isinstance(editor, QComboBox):
             model.setData(index, editor.itemData(editor.currentIndex(), Qt.EditRole))
+        elif isinstance(editor, QDateTimeEdit):
+            model.setData(index, editor.dateTime().toPython(), Qt.EditRole)
         elif isinstance(editor, RatingEditor):
             model.setData(index, editor.rating(), Qt.EditRole)
         else:

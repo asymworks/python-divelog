@@ -22,6 +22,43 @@ from PySide.QtGui import QDoubleValidator, QImage, QLineEdit, QPainter, \
     QPixmap, QStyle, QStyleOptionFrameV3, QToolButton, QWidget
 from divelog.gui.settings import read_setting, abbr, conversion, quantities
 
+def strftime_to_qt(fmt):
+    '''
+    Attempts to convert the given strftime format to a corresponding Qt Date/
+    Time formatting string.
+    '''
+    _table = {
+        '%a':   'ddd',
+        '%A':   'dddd',
+        '%b':   'MMM',
+        '%B':   'MMMM',
+        '%c':   'MM/dd/yy hh:mm:ss',
+        '%d':   'dd',
+        '%f':   'zzz',
+        '%H':   'HH',
+        '%I':   'hh',
+        '%j':   '',
+        '%m':   'MM',
+        '%M':   'mm',
+        '%p':   'AP',
+        '%S':   'ss',
+        '%U':   '',
+        '%w':   '',
+        '%W':   '',
+        '%x':   'MM/dd/yy',
+        '%X':   'hh:mm:ss',
+        '%y':   'yy',
+        '%Y':   'yyyyy',
+        '%z':   '',
+        '%Z':   '',
+        '%%':   '%'
+    }
+    
+    s = fmt
+    for k, v in _table.items():
+        s = s.replace(k, v)
+    return s
+
 class SearchEdit(QLineEdit):
     '''
     SearchEdit
@@ -211,6 +248,4 @@ class RatingEditor(QWidget):
         
         self._rating = r
         self.update()
-    
-    
     
