@@ -20,7 +20,7 @@ from PySide.QtCore import Qt, QSize, QDate, QDateTime, QTime
 from PySide.QtGui import QApplication, QComboBox, QDateTimeEdit, QImage
 from PySide.QtGui import QStyle, QStyleOptionViewItem, QStyleOptionViewItemV4, \
     QStyledItemDelegate
-from divelog.gui.controls import RatingEditor
+from divelog.gui.controls import RatingEditor, QuantityEdit
 from divelog.gui.settings import read_setting, quantities, abbr, conversion
 
 class CustomDelegate(QStyledItemDelegate):
@@ -106,6 +106,8 @@ class CustomDelegate(QStyledItemDelegate):
         elif isinstance(editor, RatingEditor):
             r = index.data(Qt.EditRole)
             editor.setRating(r)
+        elif isinstance(editor, QuantityEdit):
+            editor.fromNative(index.data(Qt.EditRole))
         else:
             super(CustomDelegate, self).setEditorData(editor, index)
             
@@ -117,6 +119,8 @@ class CustomDelegate(QStyledItemDelegate):
             model.setData(index, editor.dateTime().toPython(), Qt.EditRole)
         elif isinstance(editor, RatingEditor):
             model.setData(index, editor.rating(), Qt.EditRole)
+        elif isinstance(editor, QuantityEdit):
+            model.setData(index, editor.toNative())
         else:
             super(CustomDelegate, self).setModelData(editor, model, index)
 

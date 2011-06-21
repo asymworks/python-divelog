@@ -153,7 +153,7 @@ class QuantityEdit(QLineEdit):
     def fromNative(self, val):
         'Set the value from the Native Units'
         conv = conversion(self._quantity, self._units)
-        self.setText('%g' % conv[1](val))
+        self.setText('%.3g' % conv[1](val))
         
 class RatingEditor(QWidget):
     '''

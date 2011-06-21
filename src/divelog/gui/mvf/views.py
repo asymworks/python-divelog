@@ -109,7 +109,7 @@ class MultiColumnListView(QTreeView):
             if c.delegate is not None:
                 self.setItemDelegateForColumn(i, c.delegate(self))
 
-            self.setColumnHidden(i, c.hidden)
+            self.setColumnHidden(i, c.hidden or c.internal)
     
     def setModel(self, model):
         'Set the model and update columns'
@@ -137,6 +137,10 @@ class MultiColumnListView(QTreeView):
         # Generate and show the Menu
         m = QMenu()
         for i in range(len(mdl.columns)):
+            c = mdl.columns[i]
+            if c.internal:
+                continue
+            
             a = QAction(mdl.headerData(i, Qt.Horizontal, Qt.DisplayRole), m)
             a.setCheckable(True)
             a.setChecked(not self.isColumnHidden(i))

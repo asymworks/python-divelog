@@ -19,7 +19,6 @@
 import logging
 log = logging.getLogger(__name__)
 
-import datetime
 from functools import partial
 from PySide.QtCore import Qt, QAbstractListModel, QAbstractTableModel, \
     QModelIndex
@@ -40,6 +39,7 @@ class ModelColumn(object):
         self._attr = kw('attr')
         self._delegate = kw('delegate')
         self._hidden = kw('hidden', False)
+        self._internal = kw('internal', False)
         self._label = kw('label')
 
         # Appearance
@@ -103,6 +103,11 @@ class ModelColumn(object):
     def hidden(self):
         'Return whether the Column should be Hidden'
         return self._hidden
+    
+    @property
+    def internal(self):
+        'Return whether the Column is Internal only'
+        return self._internal
     
 class SAProxyModel(QSortFilterProxyModel):
     '''
